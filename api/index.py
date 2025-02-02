@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
+
 
 # Sample data
 students_data = [
@@ -106,24 +107,46 @@ students_data = [
     {"name": "p0w", "marks": 59}
 ]
 
-# Convert to Pandas DataFrame
+
 df = pd.DataFrame(students_data)
 
-# Initialize FastAPI
 app = FastAPI()
 
-# Enable CORS for frontend requests
+# Important: Configure CORS for Vercel deployment
+origins = [
+    "*"  # Allow all origins (for development).  Restrict in production.
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-@app.get("/")
-def get_marks(names: list[str] = []):
-    result = df[df["name"].isin(names)][["name", "marks"]].to_dict(
-        orient="records")
-    return result
+@app.get("/api")  # This is the key for Vercel API routes
+async def get_marks(name: list[str] = []):  # Use query parameters
+    if not name:
+        raise HTTPException(
+            status_code=400, detail="At least one 'name' parameter is required.")
+    try:
+        # Filter and maintain order of names in the query
+        result = []
+        for n in name:  # Iterate through the provided names
+            student_data = df[df["name"] == n][[
+                "name", "marks"]].to_dict(orient="records")
+            if student_data:  # Check if the student was found
+                # Add the student's data to the result
+                result.extend(student_data)
+            else:
+                # Handle the case where a student is not found, either by returning a default value or raising an error
+                # Adds a None value in case the student is not found.
+                result.append({"name": n, "marks": None})
+                # Or you can raise an error if you want to enforce that all names must be present:
+                # raise HTTPException(status_code=404, detail=f"Student '{n}' not found.")
+
+        return {"results": result, "status": "success"}
+    except Exception as e:
+        return {"error": str(e), "status": "error"}
