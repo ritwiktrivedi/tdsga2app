@@ -124,7 +124,7 @@ def read_root(name1: str = None, name2: str = None):
         orient="records")
 
     # Respond with JSON
-    return result
+    return json.dumps(result)
 
 
 handler = Mangum(app)
