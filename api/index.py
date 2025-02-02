@@ -123,6 +123,7 @@ app.add_middleware(
 
 
 @app.get("/")
-def get_marks(name: str):
-    result = df[df["name"] == name][["marks"]].to_dict(orient="records")
+def get_marks(names: List[str]):
+    result = df[df["name"].isin(names)][["name", "marks"]].to_dict(
+        orient="records")
     return result
