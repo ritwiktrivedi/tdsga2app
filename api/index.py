@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from mangum import Mangum
 import pandas as pd
 
 # Sample data
@@ -127,7 +126,3 @@ app.add_middleware(
 def get_marks(name: str):
     result = df[df["name"] == name][["marks"]].to_dict(orient="records")
     return result if result else {"error": "Name not found"}
-
-
-# Vercel requires a handler for serverless functions
-handler = Mangum(app)
