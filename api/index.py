@@ -1,3 +1,4 @@
+from fastapi import Body
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
@@ -123,7 +124,7 @@ app.add_middleware(
 
 
 @app.get("/")
-def get_marks(names: list[str]):
+def get_marks(names: list[str] = Body(...)):
     result = df[df["name"].isin(names)][["name", "marks"]].to_dict(
         orient="records")
     return result
