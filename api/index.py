@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -123,19 +123,22 @@ app.add_middleware(
 
 
 @app.get("/api")
-async def get_marks(name: list[str] = []):
-    if not name:
+# Use Query for query parameters
+async def get_marks(name: list[str] = Query(None)):
+    if name is None or not name:  # Check if no names were provided
         raise HTTPException(
             status_code=400, detail="At least one 'name' parameter is required.")
 
-    # Create a dictionary for faster lookups
-    student_dict = {student["name"]: student for student in students_data}
-
     results = []
     for n in name:
-        if n in student_dict:
-            results.append(student_dict[n])
-        else:
+        found = False
+        for student in students_data:  # Or use the dictionary lookup if you prefer
+            if student["name"] == n:
+                results.append(student)
+                found = True
+                break
+
+        if not found:
             results.append({"name": n, "marks": None})
 
     return {"results": results, "status": "success"}
