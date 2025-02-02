@@ -125,4 +125,4 @@ app.add_middleware(
 @app.get("/")
 def get_marks(name: str):
     result = df[df["name"] == name][["marks"]].to_dict(orient="records")
-    return result if result else {"error": "Name not found"}
+    return result
