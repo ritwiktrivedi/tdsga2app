@@ -108,14 +108,11 @@ students_data = [
 ]
 
 
-df = pd.DataFrame(students_data)
+# ... (your student data and DataFrame creation remain the same)
 
 app = FastAPI()
 
-# Important: Configure CORS for Vercel deployment
-origins = [
-    "*"  # Allow all origins (for development).  Restrict in production.
-]
+origins = ["*"]  # Restrict in production!
 
 app.add_middleware(
     CORSMiddleware,
@@ -126,27 +123,19 @@ app.add_middleware(
 )
 
 
-@app.get("/api")  # This is the key for Vercel API routes
-async def get_marks(name: list[str] = []):  # Use query parameters
+@app.get("/api")
+async def get_marks(name: list[str] = []):  # Correctly handle list of names
     if not name:
         raise HTTPException(
             status_code=400, detail="At least one 'name' parameter is required.")
-    try:
-        # Filter and maintain order of names in the query
-        result = []
-        for n in name:  # Iterate through the provided names
-            student_data = df[df["name"] == n][[
-                "name", "marks"]].to_dict(orient="records")
-            if student_data:  # Check if the student was found
-                # Add the student's data to the result
-                result.extend(student_data)
-            else:
-                # Handle the case where a student is not found, either by returning a default value or raising an error
-                # Adds a None value in case the student is not found.
-                result.append({"name": n, "marks": None})
-                # Or you can raise an error if you want to enforce that all names must be present:
-                # raise HTTPException(status_code=404, detail=f"Student '{n}' not found.")
 
-        return {"results": result, "status": "success"}
-    except Exception as e:
-        return {"error": str(e), "status": "error"}
+    results = []
+    for n in name:
+        student_data = df[df["name"] == n][[
+            "name", "marks"]].to_dict(orient="records")
+        if student_data:
+            results.extend(student_data)
+        else:
+            results.append({"name": n, "marks": None})  # Or raise an exception
+
+    return {"results": results, "status": "success"}
