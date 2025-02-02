@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-
+import pandas as pd
 
 # Sample data
 students_data = [
@@ -106,6 +106,7 @@ students_data = [
     {"name": "p0w", "marks": 59}
 ]
 
+df = pd.DataFrame(students_data)
 
 # ... (your student data and DataFrame creation remain the same)
 
@@ -124,21 +125,23 @@ app.add_middleware(
 
 @app.get("/api")
 # Use Query for query parameters
-async def get_marks(name: list[str] = Query(None)):
-    if name is None or not name:  # Check if no names were provided
-        raise HTTPException(
-            status_code=400, detail="At least one 'name' parameter is required.")
+async def get_marks(names: list[str] = Query(None)):
+    # if name is None or not name:  # Check if no names were provided
+    #     raise HTTPException(
+    #         status_code=400, detail="At least one 'name' parameter is required.")
 
-    results = []
-    for n in name:
-        found = False
-        for student in students_data:  # Or use the dictionary lookup if you prefer
-            if student["name"] == n:
-                results.append(student["marks"])
-                found = True
-                break
+    # results = []
+    # for n in name:
+    #     found = False
+    #     for student in students_data:  # Or use the dictionary lookup if you prefer
+    #         if student["name"] == n:
+    #             results.append(student["marks"])
+    #             found = True
+    #             break
 
-        if not found:
-            pass
+    #     if not found:
+    #         pass
 
-    return results
+    result = df[df["name"].isin(names)][["name", "marks"]].to_dict(
+        orient="records")
+    return result
