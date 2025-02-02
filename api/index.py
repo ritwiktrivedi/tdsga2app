@@ -105,7 +105,6 @@ students_data = [
     {"name": "9L", "marks": 69}
 ]
 
-
 # ... (your student data and DataFrame creation remain the same)
 
 app = FastAPI()
