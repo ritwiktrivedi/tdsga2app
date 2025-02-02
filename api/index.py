@@ -135,4 +135,4 @@ async def get_marks(name: list[str] = Query(None)):
         if not found:
             pass
 
-    return results
+    return {"marks": results}
