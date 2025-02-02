@@ -1,10 +1,9 @@
-# api/index.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from mangum import Mangum
 import pandas as pd
-import json
 
-
+# Sample data
 students_data = [
     {"name": "RS", "marks": 15},
     {"name": "j", "marks": 98},
@@ -108,34 +107,27 @@ students_data = [
     {"name": "p0w", "marks": 59}
 ]
 
-
-# Convert to DataFrame
+# Convert to Pandas DataFrame
 df = pd.DataFrame(students_data)
 
-# Initialize FastAPI app
+# Initialize FastAPI
 app = FastAPI()
 
-# Add CORS middleware (Allow all origins)
+# Enable CORS for frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to a specific domain in production
+    allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.get("/")
+
+@app.get("/")
+def get_marks(name: str):
+    result = df[df["name"] == name][["marks"]].to_dict(orient="records")
+    return result if result else {"error": "Name not found"}
 
 
-def read_root():
-    return {"message": "Hello, World!"}
-
-
-# @app.get("/")
-# def read_root(names: List[str]=Query(default=[])):
-
-#     filtered_df = df[df["name"].isin(names)][["marks"]]
-
-#     # Convert DataFrame to JSON correctly
-#     result = filtered_df.to_dict(orient="records")
-
-#     return result  # FastAPI automatically converts to JSON, no need for json.dumps()
+# Vercel requires a handler for serverless functions
+handler = Mangum(app)
