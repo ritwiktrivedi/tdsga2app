@@ -141,4 +141,4 @@ async def get_marks(name: list[str] = Query(None)):
         if not found:
             results.append({"name": n, "marks": None})
 
-    return {"results": results}
+    return results
