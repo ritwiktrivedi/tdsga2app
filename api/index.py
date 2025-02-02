@@ -108,6 +108,8 @@ students_data = [
 ]
 
 
+df = pd.DataFrame(students_data)
+
 # ... (your student data and DataFrame creation remain the same)
 
 app = FastAPI()
