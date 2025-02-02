@@ -1,8 +1,9 @@
 # api/index.py
-from http.server import BaseHTTPRequestHandler
+from mangum import Mangum
 import json
-import urllib.parse
+from fastapi import FastAPI
 import pandas as pd
+
 
 students_data = [
     {"name": "RS", "marks": 15},
@@ -112,20 +113,18 @@ students_data = [
 df = pd.DataFrame(students_data)
 
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        # Parse query parameters
-        query = urllib.parse.urlparse(self.path).query
-        params = urllib.parse.parse_qs(query)
-        names = params.get("name", [])
+app = FastAPI()
 
-        # Find marks for requested names
-        result = df[df["name"].isin(names)][["marks"]].to_dict(
-            orient="records")
 
-        # Respond with JSON
-        self.send_response(200)
-        self.send_header("Content-type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.end_headers()
-        return (json.dumps(result))
+@app.get("/")
+def read_root(name1: str = None, name2: str = None):
+    # Parse query parameters
+    names = [name1, name2]
+    result = df[df["name"].isin(names)][["marks"]].to_dict(
+        orient="records")
+
+    # Respond with JSON
+    return result
+
+
+handler = Mangum(app)
