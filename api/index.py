@@ -134,11 +134,11 @@ async def get_marks(name: list[str] = Query(None)):
         found = False
         for student in students_data:  # Or use the dictionary lookup if you prefer
             if student["name"] == n:
-                results.append(student)
+                results.append({"marks": student["marks"]})
                 found = True
                 break
 
         if not found:
             results.append({"name": n, "marks": None})
 
-    return {"results": results, "status": "success"}
+    return {"results": results}
